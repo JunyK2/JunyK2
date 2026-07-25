@@ -1,0 +1,163 @@
+<!DOCTYPE html><html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate AppOps Manager Pro</title>
+<style>
+body{font-family:Arial;background:#020617;color:#e2e8f0;margin:0;padding:20px}
+.container{max-width:1100px;margin:auto}
+h1{text-align:center;margin-bottom:10px}
+input{width:100%;padding:12px;border-radius:12px;margin:10px 0;border:none;background:#0f172a;color:white}
+.app{background:#0f172a;margin:10px 0;padding:15px;border-radius:15px;transition:.25s}
+.app:hover{transform:scale(1.01)}
+.options{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;align-items:center}
+button{padding:12px;border:none;border-radius:10px;margin:5px;cursor:pointer;font-weight:bold}
+.primary{background:#22c55e;color:black}
+.secondary{background:#334155;color:#fff}
+textarea{width:100%;height:220px;margin-top:20px;background:#0f172a;color:#00ff99;border-radius:12px;padding:10px}
+.badge{background:#ef4444;padding:3px 6px;border-radius:6px;font-size:11px}
+.system{background:#3b82f6;padding:3px 6px;border-radius:6px;font-size:11px}/* TOGGLE */ .switch{position:relative;display:inline-block;width:46px;height:26px} .switch input{opacity:0;width:0;height:0} .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#334155;transition:.3s;border-radius:34px} .slider:before{position:absolute;content:"";height:18px;width:18px;left:4px;bottom:4px;background:white;transition:.3s;border-radius:50%} .switch input:checked + .slider{background:#22c55e;box-shadow:0 0 10px #22c55e66} .switch input:checked + .slider:before{transform:translateX(20px)}
+
+</style>
+</head>
+<body>
+<div class="container">
+<h1>⚡ Ultimate AppOps Manager Pro</h1><input type="text" placeholder="🔍 Buscar app..." oninput="search(this.value)"><div>
+<button class="primary" onclick="preset('extremo')">🔥 Extremo</button>
+<button class="secondary" onclick="preset('balanceado')">⚖️ Balanceado</button>
+<button class="secondary" onclick="preset('performance')">🚀 Performance</button>
+<button class="secondary" onclick="autoAI()">🧠 IA</button>
+</div><h3>Impacto estimado: <span id="impacto">0</span>% (~<span id="battery">0</span>h)</h3><div id="apps"></div><button class="primary" onclick="generate()">📋 Gerar Script</button> <button class="secondary" onclick="copyScript()">📤 Copiar</button>
+
+<textarea id="out"></textarea></div><script>
+const apps = [
+{nome:"WhatsApp",pkg:"com.whatsapp",system:false,power:8},
+{nome:"Instagram",pkg:"com.instagram.android",system:false,power:6},
+{nome:"TikTok",pkg:"com.zhiliaoapp.musically",system:false,power:7},
+{nome:"Facebook",pkg:"com.facebook.katana",system:false,power:6},
+{nome:"Messenger",pkg:"com.facebook.orca",system:false,power:5},
+{nome:"Telegram",pkg:"org.telegram.messenger",system:false,power:5},
+{nome:"YouTube",pkg:"com.google.android.youtube",system:true,power:7},
+{nome:"Chrome",pkg:"com.android.chrome",system:true,power:6},
+{nome:"Google Play Services",pkg:"com.google.android.gms",system:true,power:9},
+{nome:"Maps",pkg:"com.google.android.apps.maps",system:true,power:5},
+{nome:"Gmail",pkg:"com.google.android.gm",system:true,power:4},
+{nome:"Drive",pkg:"com.google.android.apps.docs",system:true,power:4},
+{nome:"Photos",pkg:"com.google.android.apps.photos",system:true,power:5},
+{nome:"Spotify",pkg:"com.spotify.music",system:false,power:5},
+{nome:"Netflix",pkg:"com.netflix.mediaclient",system:false,power:6}
+];
+
+let state = {};
+
+function loadState(){
+ apps.forEach(a=>{
+  state[a.pkg] = JSON.parse(localStorage.getItem(a.pkg)) || {run:true,wake:true,fg:true};
+ });
+}
+
+function saveState(pkg){
+ localStorage.setItem(pkg, JSON.stringify(state[pkg]));
+}
+
+function render(list=apps){
+ const c=document.getElementById("apps");
+ c.innerHTML="";
+ list.forEach((a,i)=>{
+  const s=state[a.pkg];
+  const div=document.createElement("div");
+  div.className="app";
+
+  div.innerHTML=`
+  <b>${a.nome}</b> ${a.system?'<span class="system">Sistema</span>':''}
+
+  <div class='options'>
+
+  <label class='switch'>
+   <input type='checkbox' ${s.run?'checked':''} onchange='toggle("${a.pkg}","run")'>
+   <span class='slider'></span>
+  </label> RUN
+
+  <label class='switch'>
+   <input type='checkbox' ${s.wake?'checked':''} onchange='toggle("${a.pkg}","wake")'>
+   <span class='slider'></span>
+  </label> WAKE
+
+  <label class='switch'>
+   <input type='checkbox' ${s.fg?'checked':''} onchange='toggle("${a.pkg}","fg")'>
+   <span class='slider'></span>
+  </label> FG
+
+  </div>`;
+
+  c.appendChild(div);
+ });
+ calc();
+}
+
+function toggle(pkg,type){
+ state[pkg][type]=!state[pkg][type];
+ saveState(pkg);
+ calc();
+}
+
+function search(t){
+ render(apps.filter(a=>a.nome.toLowerCase().includes(t.toLowerCase())));
+}
+
+function preset(type){
+ apps.forEach(a=>{
+  if(type==='extremo') state[a.pkg]={run:false,wake:false,fg:false};
+  if(type==='balanceado') state[a.pkg]={run:true,wake:false,fg:true};
+  if(type==='performance') state[a.pkg]={run:true,wake:true,fg:true};
+  saveState(a.pkg);
+ });
+ render();
+}
+
+function autoAI(){
+ apps.forEach(a=>{
+  if(a.system && a.power>7){
+   state[a.pkg].run=false;
+   state[a.pkg].wake=false;
+  }
+  saveState(a.pkg);
+ });
+ render();
+ alert("IA aplicada 🧠");
+}
+
+function calc(){
+ let impact=0;
+ apps.forEach(a=>{
+  const s=state[a.pkg];
+  if(!s.run) impact+=a.power;
+  else if(!s.wake) impact+=a.power*0.3;
+ });
+ document.getElementById("impacto").innerText=Math.min(100,impact).toFixed(0);
+ document.getElementById("battery").innerText=Math.min(24,impact/4).toFixed(1);
+}
+
+function generate(){
+ let s="#!/system/bin/sh\n\n";
+ apps.forEach(a=>{
+  const st=state[a.pkg];
+  s+=`# ${a.nome}\n`;
+  if(!st.run) s+=`cmd appops set ${a.pkg} RUN_IN_BACKGROUND deny\n`;
+  if(!st.wake) s+=`cmd appops set ${a.pkg} WAKE_LOCK deny\n`;
+  if(!st.fg) s+=`cmd appops set ${a.pkg} START_FOREGROUND deny\n`;
+  s+=`am force-stop ${a.pkg}\n\n`;
+ });
+ document.getElementById("out").value=s;
+}
+
+async function copyScript(){
+ const t=document.getElementById("out");
+ await navigator.clipboard.writeText(t.value);
+ alert("Copiado 📋");
+}
+
+loadState();
+render();
+</script></body>
+</html>
