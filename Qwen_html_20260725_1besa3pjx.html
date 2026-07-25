@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Crypto Dashboard Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-0: #05060a;
+    --bg-1: #0a0d14;
+    --bg-2: #11151f;
+    --glass: rgba(255,255,255,0.04);
+    --glass-border: rgba(255,255,255,0.08);
+    --text: #e7ecf3;
+    --text-dim: #8a93a6;
+    --green: #16c784;
+    --red: #ea3943;
+    --yellow: #f0b90b;
+    --blue: #3861fb;
+    --purple: #8b5cf6;
+    --cyan: #06b6d4;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--text);
+    background: var(--bg-0);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Animated background */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: -20%;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(56,97,251,0.18), transparent 40%),
+      radial-gradient(circle at 80% 10%, rgba(139,92,246,0.18), transparent 40%),
+      radial-gradient(circle at 50% 90%, rgba(6,182,212,0.15), transparent 45%),
+      radial-gradient(circle at 90% 80%, rgba(240,185,11,0.10), transparent 40%);
+    filter: blur(40px);
+    animation: bgShift 25s ease-in-out infinite alternate;
+    z-index: -2;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    z-index: -1;
+    pointer-events: none;
+  }
+  @keyframes bgShift {
+    0%   { transform: translate(0,0) scale(1); }
+    50%  { transform: translate(-3%,2%) scale(1.05); }
+    100% { transform: translate(2%,-2%) scale(1); }
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    animation: fadeDown .8s ease both;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-mark {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3861fb, #8b5cf6);
+    display: grid; place-items: center;
+    box-shadow: 0 10px 30px -10px rgba(56,97,251,0.6);
+    position: relative;
+    overflow: hidden;
+  }
+  .logo-mark::after {
+    content:"";
+    position:absolute; inset:0;
+    background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.25));
+  }
+  .logo-mark svg { width: 22px; height: 22px; z-index:1; }
+  .logo-text { display: flex; flex-direction: column; line-height: 1.1; }
+  .logo-text b { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
+  .logo-text span { font-size: 11px; color: var(--text-dim); letter-spacing: 0.15em; text-transform: uppercase; }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass);
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--text-dim);
+    backdrop-filter: blur(12px);
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 0 rgba(22,199,132,0.7);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(22,199,132,0.6); }
+    70%  { box-shadow: 0 0 0 10px rgba(22,199,132,0); }
+    100% { box-shadow: 0 0 0 0 rgba(22,199,132,0); }
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+    padding: 6px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    backdrop-filter: blur(20px);
+    animation: fadeUp .8s .1s ease both;
+  }
+  .tab {
+    flex: 1;
+    padding: 14px 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all .3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .tab:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.03);
+  }
+  .tab.active {
+    background: linear-gradient(135deg, rgba(56,97,251,0.2), rgba(139,92,246,0.2));
+    color: var(--text);
+    box-shadow: 0 4px 20px -4px rgba(56,97,251,0.4);
+  }
+  .tab svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .tab-content {
+    display: none;
+    animation: fadeIn .5s ease;
+  }
+  .tab-content.active {
+    display: block;
+  }
+
+  /* Clock */
+  .clock-wrap {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeUp .9s .1s ease both;
+  }
+  .clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(48px, 9vw, 96px);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    background: linear-gradient(180deg, #fff 0%, #8a93a6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: 1;
+  }
+  .clock-date {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Coins grid */
+  .coins {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  .coin-card {
+    position: relative;
+    padding: 24px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1), border-color .3s, box-shadow .3s;
+    animation: fadeUp .8s ease both;
+  }
+  .coin-card:nth-child(1){ animation-delay: .15s; }
+  .coin-card:nth-child(2){ animation-delay: .25s; }
+  .coin-card:nth-child(3){ animation-delay: .35s; }
+
+  .coin-card::before {
+    content:"";
+    position:absolute;
+    inset:0;
+    background: radial-gradient(400px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.08), transparent 40%);
+    opacity: 0;
+    transition: opacity .3s;
+    pointer-events: none;
+  }
+  .coin-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 20px 60px -20px rgba(0,0,0,0.6);
+  }
+  .coin-card:hover::before { opacity: 1; }
+
+  .coin-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .coin-id {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .coin-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: grid; place-items: center;
+    font-weight: 800; font-size: 16px;
+    color: #0b0e14;
+  }
+  .coin-icon.btc { background: linear-gradient(135deg, #f7931a, #ffb84d); }
+  .coin-icon.eth { background: linear-gradient(135deg, #627eea, #8fa3ff); }
+  .coin-icon.sol { background: linear-gradient(135deg, #14f195, #9945ff); color:#fff; }
+
+  .coin-symbol { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+  .coin-name   { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  .coin-badge {
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-dim);
+    border: 1px solid var(--glass-border);
+  }
+
+  .price-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 10px;
+  }
+  .price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    transition: color .3s;
+  }
+  .change {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+  .change.up   { background: rgba(22,199,132,0.12); color: var(--green); }
+  .change.down { background: rgba(234,57,67,0.12); color: var(--red); }
+
+  .meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px dashed rgba(255,255,255,0.06);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .meta b { color: var(--text); font-weight: 600; }
+
+  .signals {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .signal {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.03);
+  }
+  .signal .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .signal.trend-up    { color: var(--green); border-color: rgba(22,199,132,0.3); background: rgba(22,199,132,0.08); }
+  .signal.trend-up .dot    { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .signal.trend-down  { color: var(--red); border-color: rgba(234,57,67,0.3); background: rgba(234,57,67,0.08); }
+  .signal.trend-down .dot  { background: var(--red); box-shadow: 0 0 8px var(--red); }
+  .signal.trend-side  { color: var(--yellow); border-color: rgba(240,185,11,0.3); background: rgba(240,185,11,0.08); }
+  .signal.trend-side .dot  { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  .signal.vol-high    { color: var(--purple); border-color: rgba(139,92,246,0.3); background: rgba(139,92,246,0.08); }
+  .signal.vol-high .dot    { background: var(--purple); box-shadow: 0 0 8px var(--purple); animation: pulse2 1s infinite; }
+  .signal.vol-low     { color: var(--cyan); border-color: rgba(6,182,212,0.3); background: rgba(6,182,212,0.08); }
+  .signal.vol-low .dot     { background: var(--cyan); }
+  @keyframes pulse2 {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50%     { transform: scale(1.4); opacity: 0.6; }
+  }
+
+  .flash { animation: flash .6s ease; }
+  @keyframes flash {
+    0%   { background: rgba(255,255,255,0.04); }
+    50%  { background: rgba(255,255,255,0.10); }
+    100% { background: rgba(255,255,255,0.04); }
+  }
+
+  /* Quick actions */
+  .section-title {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    padding-left: 4px;
+  }
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    animation: fadeUp 1s .45s ease both;
+  }
+  .action {
+    position: relative;
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(16px);
+    text-decoration: none;
+    color: var(--text);
+    transition: transform .3s, border-color .3s, background .3s;
+    overflow: hidden;
+  }
+  .action::before {
+    content:"";
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--accent, #3861fb), transparent 60%);
+    opacity: 0;
+    transition: opacity .3s;
+    z-index: 0;
+  }
+  .action:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,255,255,0.2);
+  }
+  .action:hover::before { opacity: 0.18; }
+  .action > * { position: relative; z-index: 1; }
+  .action-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: grid; place-items: center;
+    background: rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+  .action-icon svg { width: 22px; height: 22px; }
+  .action-text b { display: block; font-size: 14px; font-weight: 600; }
+  .action-text span { font-size: 11px; color: var(--text-dim); }
+  .action-arrow {
+    margin-left: auto;
+    color: var(--text-dim);
+    transition: transform .3s, color .3s;
+  }
+  .action:hover .action-arrow { transform: translateX(4px); color: var(--text); }
+
+  /* Prompts section */
+  .prompts-grid {
+    display: grid;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  .prompt-card {
+    position: relative;
+    padding: 24px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    transition: transform .3s, border-color .3s;
+    animation: fadeUp .8s ease both;
+  }
+  .prompt-card:hover {
+    border-color: rgba(255,255,255,0.15);
+  }
+  .prompt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+  .prompt-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .prompt-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, var(--accent-1, #3861fb), var(--accent-2, #8b5cf6));
+    flex-shrink: 0;
+  }
+  .prompt-icon svg {
+    width: 20px;
+    height: 20px;
+    color: white;
+  }
+  .copy-btn {
+    padding: 10px 20px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(12px);
+  }
+  .copy-btn:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+  }
+  .copy-btn.copied {
+    background: rgba(22,199,132,0.15);
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .copy-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  .prompt-content {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-dim);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .prompt-content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .prompt-content::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.02);
+    border-radius: 3px;
+  }
+  .prompt-content::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+  }
+  .prompt-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.15);
+  }
+
+  /* Telegram commands */
+  .telegram-commands {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .telegram-cmd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-border);
+    transition: all .3s;
+  }
+  .telegram-cmd:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.15);
+  }
+  .telegram-cmd-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    flex: 1;
+  }
+  .telegram-cmd .copy-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 48px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 12px;
+    animation: fadeUp 1s .55s ease both;
+  }
+  footer span { color: var(--text); font-weight: 500; }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 20px 16px 40px; }
+    .clock { font-size: 56px; }
+    .price { font-size: 26px; }
+    .tabs { flex-direction: column; }
+    .prompt-header { flex-direction: column; align-items: flex-start; }
+    .copy-btn { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <b>Crypto Dashboard</b>
+        <span>Live · Binance WebSocket</span>
+      </div>
+    </div>
+    <div class="status-pill">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Conectando…</span>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      Dashboard
+    </button>
+    <button class="tab" data-tab="prompts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+      </svg>
+      Prompts
+    </button>
+  </div>
+
+  <!-- Dashboard Tab -->
+  <div class="tab-content active" id="dashboard">
+    <div class="clock-wrap">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="clock-date" id="clockDate">—</div>
+    </div>
+
+    <div class="coins" id="coins"></div>
+
+    <div class="section-title">Atalhos rápidos</div>
+    <div class="actions">
+
+      <a class="action" href="https://www.tradingview.com/chart/" target="_blank" rel="noopener" style="--accent:#3861fb">
+        <div class="action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3861fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/>
+          </svg>
+        </div>
+        <div class="action-text"><b>TradingView</b><span>Gráficos avançados</span></div>
+        <svg class="action-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+
+      <a class="action" href="https://www.binance.com" target="_blank" rel="noopener" style="--accent:#f0b90b">
+        <div class="action-icon">
+          <svg viewBox="0 0 24 24" fill="#f0b90b">
+            <path d="M12 2l3 3-5 5-5-5 5-5zm-7 7l3 3-3 3-3-3 3-3zm14 0l3 3-3 3-3-3 3-3zm-7 7l3 3-3 3-3-3 3-3z"/>
+          </svg>
+        </div>
+        <div class="action-text"><b>Binance</b><span>Exchange global</span></div>
+        <svg class="action-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+
+      <a class="action" href="https://gemini.google.com" target="_blank" rel="noopener" style="--accent:#4285f4">
+        <div class="action-icon">
+          <svg viewBox="0 0 24 24">
+            <path fill="#4285f4" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+            <path fill="#fff" d="M12 6l2 4 4 2-4 2-2 4-2-4-4-2 4-2z"/>
+          </svg>
+        </div>
+        <div class="action-text"><b>Gemini</b><span>IA do Google</span></div>
+        <svg class="action-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+
+      <a class="action" href="https://chat.openai.com" target="_blank" rel="noopener" style="--accent:#10a37f">
+        <div class="action-icon">
+          <svg viewBox="0 0 24 24" fill="#10a37f">
+            <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm4 11h-3v3a1 1 0 01-2 0v-3H8a1 1 0 010-2h3V8a1 1 0 012 0v3h3a1 1 0 010 2z"/>
+          </svg>
+        </div>
+        <div class="action-text"><b>ChatGPT</b><span>OpenAI</span></div>
+        <svg class="action-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+
+      <a class="action" href="https://copilot.microsoft.com" target="_blank" rel="noopener" style="--accent:#0078d4">
+        <div class="action-icon">
+          <svg viewBox="0 0 24 24" fill="#0078d4">
+            <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z"/>
+          </svg>
+        </div>
+        <div class="action-text"><b>Copilot</b><span>Microsoft AI</span></div>
+        <svg class="action-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+
+      <a class="action" href="https://web.telegram.org" target="_blank" rel="noopener" style="--accent:#0088cc">
+        <div class="action-icon">
+          <svg viewBox="0 0 24 24" fill="#0088cc">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.66-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.49 1.02-.75 3.99-1.74 6.65-2.89 7.99-3.44 3.8-1.6 4.59-1.88 5.1-1.89.11 0 .37.03.54.17.14.12.18.28.2.45-.01.06.01.24 0 .38z"/>
+          </svg>
+        </div>
+        <div class="action-text"><b>Telegram</b><span>Mensagens web</span></div>
+        <svg class="action-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Prompts Tab -->
+  <div class="tab-content" id="prompts">
+    <div class="prompts-grid">
+
+      <!-- Análise Prints -->
+      <div class="prompt-card">
+        <div class="prompt-header">
+          <div class="prompt-title">
+            <div class="prompt-icon" style="--accent-1:#3861fb;--accent-2:#8b5cf6">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            Análise Prints
+          </div>
+          <button class="copy-btn" data-copy="prompt1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copiar
+          </button>
+        </div>
+        <div class="prompt-content" id="prompt1"># ATUAÇÃO: COMITÊ DE 30 ESPECIALISTAS INSTITUCIONAIS DE TRADING
+
+Você agora é o "Comitê Central de Análise Institucional", um sistema de inteligência artificial composto por 30 traders e analistas especialistas de nível mundial. Seu objetivo é analisar gráficos de trading (Cripto, Forex, Ações) com base em screenshots fornecidos pelo usuário.
+
+## 📋 REQUISITOS MÍNIMOS DE INPUT
+O usuário deve fornecer EXATAMENTE 3 SCREENSHOTS de timeframes diferentes:
+- TF MAIOR (Contexto: Daily ou 4H)
+- TF MÉDIO (Estrutura: 4H ou 1H)  
+- TF MENOR (Entrada: 15m ou 5m)
+
+**INDICADORES IDEAIS (mas não obrigatórios):**
+✅ Candles japoneses visíveis
+✅ Volume (de preferência)
+✅ EMAs (9, 20, 50, 200) - se não tiver, a IA calculará mentalmente
+✅ Preço atual visível
+
+️ **REGRA CRÍTICA:** Se os gráficos estiverem "limpos" (sem marcações), a IA DEVE IDENTIFICAR E MAPEAR mentalmente todos os elementos de SMC (OBs, FVGs, BOS, etc.) baseando-se apenas no price action. NÃO recuse a análise por falta de desenhos do usuário.
+
+---
+
+## ⚙️ FASE 1 — IDENTIFICAÇÃO E MAPEAMENTO (SMC)
+**MESMO SEM DESENHOS NOS GRÁFICOS, identifique e liste:**
+
+### Order Blocks (OBs)
+- OB Bullish mais recente: [Preço aproximado]
+- OB Bearish mais recente: [Preço aproximado]
+- Status: [Intocado / Parcialmente testado / Rompido]
+
+### Fair Value Gaps (FVGs)
+- FVGs abertos acima do preço: [Quantidade e níveis]
+- FVGs abertos abaixo do preço: [Quantidade e níveis]
+- FVGs fechados recentemente: [Sim/Não]
+
+### Estrutura de Mercado
+- Tendência TF Maior: [Alta / Baixa / Lateral]
+- Último BOS: [Direção e preço]
+- Último ChoCH: [Direção e preço]
+- Estrutura atual: [Impulso / Correção / Consolidação]
+
+### Zonas de Liquidez
+- Buy-side liquidity (acima): [Nível das máximas recentes]
+- Sell-side liquidity (abaixo): [Nível das mínimas recentes]
+- Liquidez sendo caçada: [Sim/Não e onde]
+
+### Score de Confluências (X/10)
+Some 1 ponto para cada item identificado:
+[ ] OB relevante próximo ao preço atual
+[ ] FVG aberto atuando como imã/resistência
+[ ] Estrutura definida (BOS/ChoCH claro)
+[ ] Tendência alinhada nos 3 timeframes
+[ ] Zona de liquidez identificada
+[ ] Volume confirmando movimento
+[ ] Suporte/Resistência técnico próximo
+[ ] Padrão de candle de confirmação
+[ ] Divergência (RSI/MACD) se aplicável
+[ ] Contexto macro favorável
+
+**Classificação:**
+- 7-10: FORTE (Alta probabilidade)
+- 5-6: MODERADO (Probabilidade média)
+- 3-4: NEUTRO (Aguardar confirmação)
+- 0-2: FRACO (Evitar operação)
+
+---
+
+## 🧠 FASE 2 — ANÁLISE DOS 30 ESPECIALISTAS
+Forneça UMA frase objetiva por especialista:
+
+1. Price Action: 
+2. Smart Money Concepts: 
+3. ICT: 
+4. Wyckoff: 
+5. Elliott Wave: 
+6. Quantitative Trading: 
+7. Tape Reading: 
+8. Volume Profile: 
+9. Order Flow: 
+10. Market Maker: 
+11. Estatística: 
+12. Gestão de Risco: 
+13. Psicologia do Mercado: 
+14. Macroeconomia: 
+15. Derivativos: 
+16. Volatilidade: 
+17. Scalping: 
+18. Swing Trade: 
+19. Day Trade: 
+20. Market Structure: 
+21. Liquidez: 
+22. Momentum: 
+23. Arbitragem: 
+24. Modelagem Matemática: 
+25. Machine Learning: 
+26. Análise de Sentimento: 
+27. Correlação Intermercados: 
+28. Ciclos de Mercado: 
+29. Position Sizing: 
+30. Compliance e Viés Cognitivo: 
+
+---
+
+## ⚖️ FASE 3 — DEBATE E PONDERAÇÃO DINÂMICA
+
+### Caso Búfalo (Compra)
+Liste 3 argumentos principais a favor:
+1. 
+2. 
+3. 
+
+### Caso Urso (Venda)
+Liste 3 argumentos principais contra:
+1. 
+2. 
+3. 
+
+### Ponderação Dinâmica
+Contexto atual: [Tendência Forte / Consolidação / Alta Volatilidade]
+Pesos atribuídos:
+- SMC: [X]%
+- Tendência/Momentum: [Y]%
+- Volume/Liquidez: [Z]%
+
+Justificativa: [Explicar por que esses pesos foram escolhidos]
+
+---
+
+## 📊 FASE 4 — RELATÓRIO FINAL
+
+### 🔍 ANÁLISE PROFUNDA
+- **Multi-Timeframe:** (Alinhamento entre TFs)
+- **Pontos Favoráveis:** (Convergências)
+- **Pontos Contrários:** (Divergências/Riscos)
+- **Tendência Principal:** 
+- **Tendência Secundária:**
+- **Zonas Críticas:** (Suportes/Resistências/OBs)
+- **Condições de Invalidação:** (O que anula a tese)
+- **Decisão Final:** (Como o comitê chegou à conclusão)
+
+---
+
+## 🎯 PLANO OPERACIONAL (CÁLCULOS AUTOMÁTICOS)
+
+**PARÂMETROS OBRIGATÓRIOS:**
+- Capital disponível: [USDT] (se não informado, usar 100 USDT como padrão)
+- Risco máximo: 2% do capital
+- Relação Risco:Retorno mínima: 1:3
+
+### 📊 TICKET OPERACIONAL
+
+> **📈 ATIVO:** [NOME/PAIR]  
+> ** DATA/HORA:** [Data atual]  
+> **📊 TIMEFRAMES ANALISADOS:** [TF1 / TF2 / TF3]
+> 
+> ---
+> **🎯 DIREÇÃO:** [COMPRA / VENDA / AGUARDAR]  
+> ** CONFLUÊNCIAS:** [X/10]  
+> **💪 CONFIANÇA:** [Alta / Média / Baixa]
+> 
+> ---
+> ###  PONTOS DE ENTRADA E SAÍDA
+> **🟢 ENTRADA IDEAL:** [Preço exato ou zona]  
+> **🟡 ENTRADA CONSERVADORA:** [Preço de confirmação]  
+> **🔴 STOP LOSS:** [Preço exato]  
+> **📏 DISTÂNCIA DO STOP:** [X]%
+> 
+> ---
+> ### 🎯 ALVOS (RR 1:3 MÍNIMO)
+> ** TAKE PROFIT 1:** [Preço] ([X]% de lucro)  
+> **🥈 TAKE PROFIT 2 (RR 1:3):** [Preço] ([X]% de lucro)  
+> **🥉 TAKE PROFIT 3:** [Preço] ([X]% de lucro)
+> 
+> ---
+> ### 💰 CÁLCULOS DE POSIÇÃO E ALAVANCAGEM
+> **💵 Capital:** [X] USDT  
+> **📉 Risco por operação (2%):** [X] USDT  
+> **📏 Distância do Stop:** [X]%  
+> ** Tamanho da Posição:** [X] USDT  
+> **🏦 Margem Utilizada:** [X] USDT  
+> **⚡ ALAVANCAGEM RECOMENDADA:** [X]x
+> 
+> ---
+> ### 📐 FÓRMULAS UTILIZADAS
+> **Tamanho da Posição** = (Risco em USDT ÷ Distância do Stop %)  
+> **Alavancagem** = (Tamanho da Posição  Capital)  
+> **TP2 (RR 1:3)** = Entrada + (3 × Distância do Stop)
+> 
+> ---
+> ### ⚖️ RELAÇÃO RISCO:RETORNO
+> **Risco:** [X] USDT ([X]%)  
+> **Retorno Alvo (TP2):** [Y] USDT ([Y]%)  
+> **Relação:** 1:[Z]
+> 
+> ---
+> ### ⚠️ INVALIDAÇÃO E RISCOS
+> **❌ Condição de Invalidação:** [O que anula o trade]  
+> **⚠️ Principais Riscos:** [Lista de riscos]  
+> ** Eventos Relevantes:** [Notícias/eventos próximos]
+> 
+> ---
+> ** NOTA DO COMITÊ:** [Breve justificativa da decisão]
+
+---
+
+## 🔧 REGRAS FINAIS DE EXECUÇÃO
+
+1. **NUNCA recuse a análise** por falta de marcações nos gráficos. Se estiver limpo, IDENTIFIQUE os elementos você mesmo.
+2. **Só recuse** se:
+   - Menos de 3 timeframes enviados
+   - Imagens ilegíveis/sem preço visível
+   - Ativo não identificável
+3. **Sempre calcule** alavancagem e posição mesmo se for "AGUARDAR"
+4. **Mantenha RR 1:3** como padrão obrigatório
+5. **Se o stop for muito longo** para o capital, ajuste a alavancagem ou recomende aguardar
+6. **Esta seção do Ticket Operacional deve ser a ÚLTIMA coisa** na resposta. Não escreva nada após ela.
+
+---
+
+**INÍCIO DA ANÁLISE:** Aguarde o usuário enviar as 3 imagens e o valor do capital (se não informar, use 12 USDT).</div>
+      </div>
+
+      <!-- Análise Respostas -->
+      <div class="prompt-card">
+        <div class="prompt-header">
+          <div class="prompt-title">
+            <div class="prompt-icon" style="--accent-1:#16c784;--accent-2:#06b6d4">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            Análise Respostas
+          </div>
+          <button class="copy-btn" data-copy="prompt2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copiar
+          </button>
+        </div>
+        <div class="prompt-content" id="prompt2">Análise as respostas e me diga de forma clara a entrada, alvo e stop</div>
+      </div>
+
+      <!-- Gemini Prints -->
+      <div class="prompt-card">
+        <div class="prompt-header">
+          <div class="prompt-title">
+            <div class="prompt-icon" style="--accent-1:#4285f4;--accent-2:#34a853">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </div>
+            Gemini Prints
+          </div>
+          <button class="copy-btn" data-copy="prompt3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copiar
+          </button>
+        </div>
+        <div class="prompt-content" id="prompt3">vou te mandar 5 prints em mensagem separadas, aguarde um pouco</div>
+      </div>
+
+      <!-- Comandos Bot Telegram -->
+      <div class="prompt-card">
+        <div class="prompt-header">
+          <div class="prompt-title">
+            <div class="prompt-icon" style="--accent-1:#0088cc;--accent-2:#29b6f6">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.66-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.49 1.02-.75 3.99-1.74 6.65-2.89 7.99-3.44 3.8-1.6 4.59-1.88 5.1-1.89.11 0 .37.03.54.17.14.12.18.28.2.45-.01.06.01.24 0 .38z"/>
+              </svg>
+            </div>
+            Comandos Bot Telegram
+          </div>
+        </div>
+        <div class="telegram-commands">
+          <div class="telegram-cmd">
+            <span class="telegram-cmd-text">/chart BINANCE:BTCUSDT 1D</span>
+            <button class="copy-btn" data-copy="cmd1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copiar
+            </button>
+          </div>
+          <div class="telegram-cmd">
+            <span class="telegram-cmd-text">/chart BINANCE:BTCUSDT 4h</span>
+            <button class="copy-btn" data-copy="cmd2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copiar
+            </button>
+          </div>
+          <div class="telegram-cmd">
+            <span class="telegram-cmd-text">/chart BINANCE:BTCUSDT 1h</span>
+            <button class="copy-btn" data-copy="cmd3">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copiar
+            </button>
+          </div>
+          <div class="telegram-cmd">
+            <span class="telegram-cmd-text">/chart BINANCE:BTCUSDT 15m</span>
+            <button class="copy-btn" data-copy="cmd4">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copiar
+            </button>
+          </div>
+          <div class="telegram-cmd">
+            <span class="telegram-cmd-text">/chart BINANCE:BTCUSDT 5m</span>
+            <button class="copy-btn" data-copy="cmd5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copiar
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    Dados em tempo real via <span>Binance WebSocket</span> · Atualizado a cada tick · © <span id="year"></span>
+  </footer>
+
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  /* ---------- Tabs ---------- */
+  const tabs = document.querySelectorAll('.tab');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const targetTab = tab.dataset.tab;
+      
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      
+      tabContents.forEach(content => {
+        content.classList.remove('active');
+        if (content.id === targetTab) {
+          content.classList.add('active');
+        }
+      });
+    });
+  });
+
+  /* ---------- Copy to Clipboard ---------- */
+  const copyButtons = document.querySelectorAll('.copy-btn');
+  
+  const promptsData = {
+    prompt1: document.getElementById('prompt1').textContent,
+    prompt2: document.getElementById('prompt2').textContent,
+    prompt3: document.getElementById('prompt3').textContent,
+    cmd1: '/chart BINANCE:BTCUSDT 1D',
+    cmd2: '/chart BINANCE:BTCUSDT 4h',
+    cmd3: '/chart BINANCE:BTCUSDT 1h',
+    cmd4: '/chart BINANCE:BTCUSDT 15m',
+    cmd5: '/chart BINANCE:BTCUSDT 5m'
+  };
+
+  copyButtons.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const copyId = btn.dataset.copy;
+      const text = promptsData[copyId];
+      
+      try {
+        await navigator.clipboard.writeText(text);
+        
+        const originalHTML = btn.innerHTML;
+        btn.classList.add('copied');
+        btn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Copiado!
+        `;
+        
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = originalHTML;
+        }, 2000);
+      } catch (err) {
+        console.error('Erro ao copiar:', err);
+      }
+    });
+  });
+
+  /* ---------- Clock ---------- */
+  const clockEl = document.getElementById('clock');
+  const dateEl  = document.getElementById('clockDate');
+  const WEEKDAYS = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const MONTHS   = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  function updateClock() {
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mm = String(d.getMinutes()).padStart(2,'0');
+    const ss = String(d.getSeconds()).padStart(2,'0');
+    clockEl.textContent = `${hh}:${mm}:${ss}`;
+    dateEl.textContent = `${WEEKDAYS[d.getDay()]}, ${d.getDate()} de ${MONTHS[d.getMonth()]} de ${d.getFullYear()}`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  /* ---------- Coins ---------- */
+  const COINS = [
+    {
+      symbol: 'BTCUSDT',
+      display: 'BTC',
+      name: 'Bitcoin',
+      iconClass: 'btc',
+      letter: '₿',
+      tvSymbol: 'BINANCE:BTCUSDT',
+      decimals: 2,
+      format: v => v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    },
+    {
+      symbol: 'ETHUSDT',
+      display: 'ETH',
+      name: 'Ethereum',
+      iconClass: 'eth',
+      letter: 'Ξ',
+      tvSymbol: 'BINANCE:ETHUSDT',
+      decimals: 2,
+      format: v => v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    },
+    {
+      symbol: 'SOLUSDT',
+      display: 'SOL',
+      name: 'Solana',
+      iconClass: 'sol',
+      letter: '◎',
+      tvSymbol: 'BINANCE:SOLUSDT',
+      decimals: 3,
+      format: v => v.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 })
+    }
+  ];
+
+  const coinsEl = document.getElementById('coins');
+  const state = {};
+
+  COINS.forEach(c => {
+    state[c.symbol] = {
+      price: null,
+      change: null,
+      history: [],
+      lastUpdate: 0
+    };
+
+    const card = document.createElement('div');
+    card.className = 'coin-card';
+    card.dataset.symbol = c.symbol;
+    card.innerHTML = `
+      <div class="coin-head">
+        <div class="coin-id">
+          <div class="coin-icon ${c.iconClass}">${c.letter}</div>
+          <div>
+            <div class="coin-symbol">${c.display}/USDT</div>
+            <div class="coin-name">${c.name}</div>
+          </div>
+        </div>
+        <div class="coin-badge">Binance</div>
+      </div>
+      <div class="price-row">
+        <div class="price" data-price>$ —</div>
+        <div class="change" data-change>—</div>
+      </div>
+      <div class="signals">
+        <div class="signal trend-side" data-trend><span class="dot"></span><span>—</span></div>
+        <div class="signal vol-low"   data-vol><span class="dot"></span><span>—</span></div>
+      </div>
+      <div class="meta">
+        <div>24h High: <b data-high>—</b></div>
+        <div>24h Low: <b data-low>—</b></div>
+      </div>
+    `;
+    card.addEventListener('click', () => {
+      window.open(`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(c.tvSymbol)}`, '_blank');
+    });
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      card.style.setProperty('--my', (e.clientY - r.top)  + 'px');
+    });
+    coinsEl.appendChild(card);
+  });
+
+  /* ---------- Signal analysis ---------- */
+  const HISTORY_SECONDS = 20;
+  const TREND_THRESHOLD = 0.0015;
+  const VOL_THRESHOLD   = 0.003;
+
+  function analyze(sym) {
+    const s = state[sym];
+    if (!s.history.length) return { trend: 'side', vol: 'low' };
+
+    const now = Date.now();
+    s.history = s.history.filter(h => now - h.t <= HISTORY_SECONDS * 1000);
+    if (s.history.length < 2) return { trend: 'side', vol: 'low' };
+
+    const first = s.history[0].p;
+    const last  = s.history[s.history.length - 1].p;
+    const prices = s.history.map(h => h.p);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+
+    const delta = (last - first) / first;
+    const range = (max - min) / first;
+
+    let trend = 'side';
+    if (delta >  TREND_THRESHOLD) trend = 'up';
+    else if (delta < -TREND_THRESHOLD) trend = 'down';
+
+    const vol = range > VOL_THRESHOLD ? 'high' : 'low';
+    return { trend, vol };
+  }
+
+  const TREND_LABELS = {
+    up:   'Subindo',
+    down: 'Descendo',
+    side: 'Lateral'
+  };
+  const VOL_LABELS = {
+    high: 'Alta volatilidade',
+    low:  'Mercado parado'
+  };
+
+  function renderSignals(sym) {
+    const card = document.querySelector(`.coin-card[data-symbol="${sym}"]`);
+    if (!card) return;
+    const { trend, vol } = analyze(sym);
+
+    const tEl = card.querySelector('[data-trend]');
+    tEl.className = `signal trend-${trend}`;
+    tEl.lastElementChild.textContent = TREND_LABELS[trend];
+
+    const vEl = card.querySelector('[data-vol]');
+    vEl.className = `signal vol-${vol}`;
+    vEl.lastElementChild.textContent = VOL_LABELS[vol];
+  }
+
+  /* ---------- Render ---------- */
+  function render(sym, data) {
+    const cfg = COINS.find(c => c.symbol === sym);
+    const card = document.querySelector(`.coin-card[data-symbol="${sym}"]`);
+    if (!card || !cfg) return;
+
+    const priceEl = card.querySelector('[data-price]');
+    const changeEl = card.querySelector('[data-change]');
+    const highEl = card.querySelector('[data-high]');
+    const lowEl  = card.querySelector('[data-low]');
+
+    const price = parseFloat(data.c);
+    const changePct = parseFloat(data.P);
+
+    const prev = state[sym].price;
+    priceEl.textContent = '$ ' + cfg.format(price);
+    if (prev !== null && price !== prev) {
+      priceEl.style.color = price > prev ? 'var(--green)' : 'var(--red)';
+      card.classList.remove('flash');
+      void card.offsetWidth;
+      card.classList.add('flash');
+      clearTimeout(state[sym].colorTimer);
+      state[sym].colorTimer = setTimeout(() => { priceEl.style.color = ''; }, 900);
+    }
+
+    changeEl.textContent = (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%';
+    changeEl.className = 'change ' + (changePct >= 0 ? 'up' : 'down');
+
+    highEl.textContent = '$ ' + cfg.format(parseFloat(data.h));
+    lowEl.textContent  = '$ ' + cfg.format(parseFloat(data.l));
+
+    state[sym].price = price;
+    state[sym].change = changePct;
+
+    const now = Date.now();
+    if (now - state[sym].lastUpdate >= 1000) {
+      state[sym].history.push({ t: now, p: price });
+      state[sym].lastUpdate = now;
+    }
+
+    renderSignals(sym);
+  }
+
+  /* ---------- WebSocket ---------- */
+  const statusDot  = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+
+  function connect() {
+    const streams = COINS.map(c => c.symbol.toLowerCase() + '@ticker').join('/');
+    const url = `wss://stream.binance.com:9443/stream?streams=${streams}`;
+    const ws = new WebSocket(url);
+
+    ws.onopen = () => {
+      statusDot.style.background = 'var(--green)';
+      statusText.textContent = 'Conectado · tempo real';
+    };
+    ws.onmessage = (ev) => {
+      try {
+        const msg = JSON.parse(ev.data);
+        if (msg.stream && msg.data) {
+          render(msg.data.s, msg.data);
+        }
+      } catch (e) { /* ignore */ }
+    };
+    ws.onerror = () => {
+      statusDot.style.background = 'var(--red)';
+      statusText.textContent = 'Erro na conexão';
+    };
+    ws.onclose = () => {
+      statusDot.style.background = 'var(--yellow)';
+      statusText.textContent = 'Reconectando…';
+      setTimeout(connect, 3000);
+    };
+  }
+
+  connect();
+
+  setInterval(() => {
+    COINS.forEach(c => renderSignals(c.symbol));
+  }, 1000);
+</script>
+
+</body>
+</html>
